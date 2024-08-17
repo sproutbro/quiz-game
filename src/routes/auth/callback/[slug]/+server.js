@@ -2,6 +2,7 @@ import kakao from "$lib/providers/kakao.js";
 import { redirect } from "@sveltejs/kit";
 import { encrypt, decrypt } from "$lib/util.js";
 import { selectFromAccount, selectFromAvatar } from "$lib/db/queries.js";
+import { DOMAIN, IS_DEV } from "$env/static/private";
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
@@ -32,7 +33,7 @@ export async function GET(event) {
 
     event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
       path: "/",
-      secure: true,
+      secure: !IS_DEV,
       expires: access_token.expires,
     });
   }
@@ -45,9 +46,11 @@ function compareState(event) {
   const state = event.url.searchParams.get("state");
   const cookie_state = event.cookies.get("state");
   event.cookies.delete("state", {
-    domain: import.meta.env.PUBLIC_ORIGIN,
+    domain: DOMAIN,
     path: "/",
   });
+
+  console.log(state, event.cookies.get("state"), DOMAIN);
 
   const validState = state === cookie_state;
   console.log("state 코드 비교 : ", validState);
