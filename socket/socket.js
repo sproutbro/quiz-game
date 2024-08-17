@@ -30,8 +30,10 @@ export default function socketIO(io) {
 
     // 플레이어 등록하기
     if (cookies) {
-      registerPlayer(socket.id, cookies);
-      io.emit("setPlayer", players);
+      if (cookies.access_token) {
+        registerPlayer(socket.id, cookies);
+        io.emit("setPlayer", players);
+      }
     }
 
     // 문제 보여주기

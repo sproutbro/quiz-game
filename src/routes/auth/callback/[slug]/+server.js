@@ -44,6 +44,8 @@ function compareState(event) {
   const cookie_state = event.cookies.get("state");
   event.cookies.delete("state", { path: "/" });
 
+  console.log(state, cookie_state);
+
   const validState = state === cookie_state;
   console.log("state 코드 비교 : ", validState);
   return validState;
