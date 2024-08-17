@@ -1,7 +1,7 @@
 import kakao from "$lib/providers/kakao.js";
 import { redirect } from "@sveltejs/kit";
 import { encrypt, decrypt } from "$lib/util.js";
-import { getPlayerById, getAvatarById } from "$lib/db/queries.js";
+import { selectFromAccount, selectFromAvatar } from "$lib/db/queries.js";
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET(event) {
@@ -24,9 +24,11 @@ export async function GET(event) {
     access_token.avatar = await getAvatar(access_token);
 
     // 쿠키 만료일 설정
-    access_token.expires = new Date(
-      new Date().getTime() + 60 * 24 * 60 * 60 * 1000
-    );
+    const expirationDays = 60;
+    const expirationTime = expirationDays * 24 * 60 * 60 * 1000;
+    access_token.expires = new Date(Date.now() + expirationTime);
+
+    console.log(access_token.expires);
 
     event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
       path: "/",
@@ -42,9 +44,10 @@ export async function GET(event) {
 function compareState(event) {
   const state = event.url.searchParams.get("state");
   const cookie_state = event.cookies.get("state");
-  event.cookies.delete("state", { path: "/" });
-
-  console.log(state, cookie_state);
+  event.cookies.delete("state", {
+    domain: import.meta.env.PUBLIC_ORIGIN,
+    path: "/",
+  });
 
   const validState = state === cookie_state;
   console.log("state 코드 비교 : ", validState);
@@ -58,7 +61,7 @@ async function checkNewPlayer(access_token) {
   const nickname = access_token.user_info.properties.nickname;
 
   try {
-    const player = await getPlayerById(provider, providerId, nickname);
+    const player = await selectFromAccount(provider, providerId, nickname);
     console.log("플레이어 닉네임 :", player.nickname);
     return player.nickname;
   } catch (error) {
@@ -72,7 +75,7 @@ async function getAvatar(access_token) {
   const providerId = access_token.user_info.id;
 
   try {
-    const avatar = await getAvatarById(provider, providerId);
+    const avatar = await selectFromAvatar(provider, providerId);
     console.log("아바타 가져오기 :", avatar);
     return avatar;
   } catch (error) {

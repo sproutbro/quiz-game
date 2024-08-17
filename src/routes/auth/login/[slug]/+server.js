@@ -6,7 +6,9 @@ export function GET(event) {
   console.log(event.params.slug);
   if (event.params.slug === "kakao") {
     const { url, state } = kakao.authorization();
-    event.cookies.set("state", state, { path: "/" });
+    event.cookies.set("state", state, {
+      path: "/",
+    });
     return redirect(302, url);
   }
 

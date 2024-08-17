@@ -1,6 +1,6 @@
 import db from "./connection.js";
 
-export async function getPlayerById(provider, providerId, nickname) {
+export async function selectFromAccount(provider, providerId, nickname) {
   const SQL = `
     SELECT
         *
@@ -41,7 +41,7 @@ async function registerNewAvatar(provider, providerId) {
   return await db.query(SQL, [provider, providerId]);
 }
 
-export async function getAvatarById(provider, providerId) {
+export async function selectFromAvatar(provider, providerId) {
   const SQL = `
     SELECT
         hair,
