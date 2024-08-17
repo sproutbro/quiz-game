@@ -8,8 +8,11 @@ import { DOMAIN, IS_DEV } from "$env/static/private";
 export async function GET(event) {
   // state 코드 비교 쿠키에서 삭제
   const validState = compareState(event);
+
+  console.log("validState", validState);
   if (!validState) return redirect(302, "/auth/login");
 
+  console.log("access_token 생성");
   // access_token 생성
   let access_token = {};
   if (event.params.slug === "kakao") {
