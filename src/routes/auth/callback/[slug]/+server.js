@@ -29,7 +29,9 @@ export async function GET(event) {
     const expirationTime = expirationDays * 24 * 60 * 60 * 1000;
     access_token.expires = new Date(Date.now() + expirationTime);
 
-    event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
+    const encrypt_access_token = encrypt(JSON.stringify(access_token));
+
+    event.cookies.set("access_token", "encrypt_access_token", {
       path: "/",
       // expires: access_token.expires,
     });
