@@ -8,9 +8,7 @@ import { DOMAIN, IS_DEV } from "$env/static/private";
 export async function GET(event) {
   // state 코드 비교 쿠키에서 삭제
   const validState = compareState(event);
-  if (!validState) {
-    return redirect(302, "/auth/login");
-  }
+  if (!validState) return redirect(302, "/auth/login");
 
   // access_token 생성
   let access_token = {};
@@ -31,14 +29,9 @@ export async function GET(event) {
     const expirationTime = expirationDays * 24 * 60 * 60 * 1000;
     access_token.expires = new Date(Date.now() + expirationTime);
 
-    console.log(access_token);
-
-    const encrypt_access_token = encrypt(JSON.stringify(access_token));
-    console.log(encrypt_access_token);
-
     event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
       path: "/",
-      expires: access_token.expires.toString(),
+      // expires: access_token.expires,
     });
   }
 
@@ -54,11 +47,11 @@ function compareState(event) {
   });
 
   const validState = state === cookie_state;
-  console.log("state 코드 비교 : ", validState);
+  console.log("state 코드 비교 쿠키에서 삭제 : ", validState);
   return validState;
 }
 
-// 플레이어 닉네임 확인
+// 신규 플레이어 확인
 async function checkNewPlayer(access_token) {
   const provider = access_token.provider;
   const providerId = access_token.user_info.id;
