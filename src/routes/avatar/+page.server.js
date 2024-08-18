@@ -6,14 +6,8 @@ import { updateAvatar } from "$lib/db/queries.js";
 export function load(event) {
   console.log("/avatar");
 
-  let user_info = event.cookies.get("user_info");
   let avatar = event.cookies.get("avatar");
-
-  if (!user_info || !avatar) {
-    return redirect(302, "/auth/login");
-  }
-
-  user_info = JSON.parse(decrypt(user_info));
+  if (!avatar) return redirect(302, "/auth/login");
   avatar = JSON.parse(decrypt(avatar));
 
   return { avatar };
@@ -21,16 +15,20 @@ export function load(event) {
 
 /** @type {import('./$types').Actions} */
 export const actions = {
+  // 아바타 저장하기
   default: async (event) => {
-    const data = await event.request.formData();
-    const avatar = Object.fromEntries(data);
+    console.log("아바타 저장하기");
 
-    const access_token = JSON.parse(decrypt(event.cookies.get("access_token")));
-    access_token.avatar = avatar;
-    event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
+    const encrypt_user_info = event.cookies.get("user_info");
+    const user_info = JSON.parse(decrypt(encrypt_user_info));
+
+    const formData = await event.request.formData();
+    const avatar = Object.fromEntries(formData);
+
+    event.cookies.set("avatar", encrypt(JSON.stringify(avatar)), {
       path: "/",
-      secure: true,
-      expires: new Date(access_token.expires),
+      // 임시
+      expires: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
     });
 
     const params = [
@@ -38,11 +36,10 @@ export const actions = {
       avatar.clothing,
       avatar.accessories,
       avatar.skin,
-      access_token.provider,
-      access_token.user_info.id,
+      user_info.provider,
+      user_info.id,
     ];
 
-    console.log("아바타 변경");
     return { success: await updateAvatar(params) };
   },
 };

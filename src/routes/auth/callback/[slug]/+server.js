@@ -19,7 +19,6 @@ export async function GET(event) {
   // 아바타 가져오기
   const avatar = await getAvatar(user_info);
 
-  console.log(token, user_info, avatar);
   // 쿠키 저장하기
   saveCookies(event, { token, user_info, avatar });
 
