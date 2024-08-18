@@ -115,6 +115,6 @@ function saveCookies(event, cookies) {
   // 쿠키암호화
   for (let key in cookies) {
     const encrypt_cookie = encrypt(JSON.stringify(cookies[key]));
-    event.cookies.set(key, "encrypt_cookie", cookie_option);
+    event.cookies.set(key, encrypt_cookie, cookie_option);
   }
 }
