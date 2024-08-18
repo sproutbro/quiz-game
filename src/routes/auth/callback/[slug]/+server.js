@@ -8,11 +8,10 @@ import { DOMAIN, IS_DEV } from "$env/static/private";
 export async function GET(event) {
   // state 코드 비교 쿠키에서 삭제
   const validState = compareState(event);
+  if (!validState) {
+    return redirect(302, "/auth/login");
+  }
 
-  console.log("validState", validState);
-  if (!validState) return redirect(302, "/auth/login");
-
-  console.log("access_token 생성");
   // access_token 생성
   let access_token = {};
   if (event.params.slug === "kakao") {
@@ -32,7 +31,7 @@ export async function GET(event) {
     const expirationTime = expirationDays * 24 * 60 * 60 * 1000;
     access_token.expires = new Date(Date.now() + expirationTime);
 
-    console.log(access_token.expires);
+    console.log(access_token);
 
     event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
       path: "/",
@@ -49,11 +48,8 @@ function compareState(event) {
   const state = event.url.searchParams.get("state");
   const cookie_state = event.cookies.get("state");
   event.cookies.delete("state", {
-    domain: DOMAIN,
     path: "/",
   });
-
-  console.log(state, event.cookies.get("state"), DOMAIN);
 
   const validState = state === cookie_state;
   console.log("state 코드 비교 : ", validState);
@@ -68,7 +64,7 @@ async function checkNewPlayer(access_token) {
 
   try {
     const player = await selectFromAccount(provider, providerId, nickname);
-    console.log("플레이어 닉네임 :", player.nickname);
+    console.log("신규 플레이어 확인 :", player);
     return player.nickname;
   } catch (error) {
     console.error(error);

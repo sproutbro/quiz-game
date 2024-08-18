@@ -3,7 +3,7 @@ import { redirect } from "@sveltejs/kit";
 
 /** @type {import('./$types').RequestHandler} */
 export function GET(event) {
-  console.log(event.params.slug);
+  console.log("/auth/login/", event.params.slug);
   if (event.params.slug === "kakao") {
     const { url, state } = kakao.authorization();
     event.cookies.set("state", state, {
