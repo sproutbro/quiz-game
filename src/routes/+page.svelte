@@ -9,12 +9,42 @@
   let chat_section;
   let quiz_section;
 
+  onMount(() => {
+    socket = io(import.meta.env.VITE_SOCKET_URL, {
+      withCredentials: true, // 쿠키를 함께 전송
+    });
+
+    player_section = document.getElementById("player");
+    chat_section = document.getElementById("chat");
+    quiz_section = document.getElementById("quiz");
+
+    socket.on("setPlayer", (data) => {
+      setPlayer(data);
+    });
+
+    socket.on("chat message", (data) => {
+      const newChatElement = document.createElement("div");
+      newChatElement.textContent = data;
+      chat_section.appendChild(newChatElement);
+    });
+
+    socket.on("question", (data) => {
+      quiz_section.textContent = data;
+    });
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  });
+
   // 플레이어 등록
   function setPlayer(players) {
+    console.log("플레이어 등록 : ", players);
     player_section.innerHTML = "";
     for (let key in players) {
       const value = players[key];
-
       const newScoreElement = document.createElement("div");
       newScoreElement.id = key;
       newScoreElement.textContent = `${value.nickname}: ${value.score}`;
@@ -27,7 +57,7 @@
       for (let key in avatar) {
         const value = avatar[key];
         const newImgElement = document.createElement("img");
-        newImgElement.src = value || `/img/${key}01.png`;
+        newImgElement.src = value;
         newImgElement.alt = key;
 
         newAvatarElement.appendChild(newImgElement);
@@ -62,36 +92,6 @@
       avatartElement.style.display = "block";
     }
   }
-
-  onMount(() => {
-    socket = io(import.meta.env.VITE_SOCKET_URL, {
-      withCredentials: true, // 쿠키를 함께 전송
-    });
-
-    player_section = document.getElementById("player");
-    chat_section = document.getElementById("chat");
-    quiz_section = document.getElementById("quiz");
-
-    socket.on("setPlayer", (data) => {
-      setPlayer(data);
-    });
-
-    socket.on("chat message", (data) => {
-      const newChatElement = document.createElement("div");
-      newChatElement.textContent = data;
-      chat_section.appendChild(newChatElement);
-    });
-
-    socket.on("question", (data) => {
-      quiz_section.textContent = data;
-    });
-
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  });
 </script>
 
 <button id="player" on:click={handlePlayerClick}></button>

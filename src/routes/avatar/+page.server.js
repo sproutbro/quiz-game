@@ -4,12 +4,19 @@ import { updateAvatar } from "$lib/db/queries.js";
 
 /** @type {import('./$types').PageServerLoad} */
 export function load(event) {
-  if (!event.cookies.get("access_token")) {
-    redirect(302, "/auth/login");
+  console.log("/avatar");
+
+  let user_info = event.cookies.get("user_info");
+  let avatar = event.cookies.get("avatar");
+
+  if (!user_info || !avatar) {
+    return redirect(302, "/auth/login");
   }
 
-  const access_token = JSON.parse(decrypt(event.cookies.get("access_token")));
-  return { avatar: access_token.avatar };
+  user_info = JSON.parse(decrypt(user_info));
+  avatar = JSON.parse(decrypt(avatar));
+
+  return { avatar };
 }
 
 /** @type {import('./$types').Actions} */

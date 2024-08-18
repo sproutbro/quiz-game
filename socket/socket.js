@@ -29,7 +29,7 @@ export default function socketIO(io) {
     const cookies = getCookie(socket);
 
     // 플레이어 등록하기
-    if (cookies) {
+    if (cookies?.user_info && cookies?.avatar) {
       registerPlayer(socket.id, cookies);
       io.emit("setPlayer", players);
     }
