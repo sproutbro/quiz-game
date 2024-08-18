@@ -1,11 +1,11 @@
-import kakao from "$lib/providers/kakao.js";
+import providers from "$lib/providers";
 import { redirect } from "@sveltejs/kit";
 
 /** @type {import('./$types').RequestHandler} */
 export function GET(event) {
   console.log("/auth/login/", event.params.slug);
   if (event.params.slug === "kakao") {
-    const { url, state } = kakao.authorization();
+    const { url, state } = providers[event.params.slug].authorization();
     event.cookies.set("state", state, {
       path: "/",
     });

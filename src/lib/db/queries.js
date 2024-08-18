@@ -3,7 +3,7 @@ import db from "./connection.js";
 export async function selectFromAccount(provider, providerId, nickname) {
   const SQL = `
     SELECT
-        *
+        nickname
     FROM
         account
     WHERE
@@ -26,7 +26,7 @@ async function registerNewPlayer(provider, providerId, nickname) {
     INSERT INTO
         account
     VALUES
-        ($1, $2, $3) RETURNING *;
+        ($1, $2, $3) RETURNING nickname;
     `;
   return await db.query(SQL, [provider, providerId, nickname]);
 }

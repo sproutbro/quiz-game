@@ -30,10 +30,8 @@ export default function socketIO(io) {
 
     // 플레이어 등록하기
     if (cookies) {
-      if (cookies.access_token) {
-        registerPlayer(socket.id, cookies);
-        io.emit("setPlayer", players);
-      }
+      registerPlayer(socket.id, cookies);
+      io.emit("setPlayer", players);
     }
 
     // 문제 보여주기
@@ -62,19 +60,18 @@ function getCookie(socket) {
   let cookies = socket.handshake.headers.cookie;
   if (cookies) cookies = parse(cookies);
 
-  console.log("쿠키 가져오기 : ", cookies ? Object.keys(cookies) : "쿠키없음");
+  console.log("쿠키 가져오기 : ", cookies ? Object.keys(cookies) : null);
   return cookies;
 }
 
 // 플레이어 등록하기
 function registerPlayer(id, cookies) {
-  const access_token = JSON.parse(decrypt(cookies.access_token));
-  const nickname = access_token.nickname;
-  const avatar = access_token.avatar;
+  console.log("플레이어 등록하기");
+  const user_info = JSON.parse(decrypt(cookies.user_info));
+  const nickname = user_info.nickname;
+  const avatar = JSON.parse(decrypt(cookies.avatar));
 
   players[id] = { score: 0, nickname, avatar };
-
-  console.log("플레이어 등록 : ", players[id]);
 }
 
 // 문제 보여주기
