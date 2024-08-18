@@ -33,10 +33,12 @@ export async function GET(event) {
 
     console.log(access_token);
 
+    const encrypt_access_token = encrypt(JSON.stringify(access_token));
+    console.log(encrypt_access_token);
+
     event.cookies.set("access_token", encrypt(JSON.stringify(access_token)), {
       path: "/",
-      secure: !IS_DEV,
-      expires: access_token.expires,
+      expires: access_token.expires.toString(),
     });
   }
 
