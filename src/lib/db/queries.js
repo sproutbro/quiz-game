@@ -75,3 +75,17 @@ export async function updateAvatar(params) {
   const result = await db.query(SQL, params);
   return result.rowCount;
 }
+
+export async function selectProfile(params) {
+  const SQL = `
+  SELECT
+      *
+  FROM
+      profile
+  WHERE
+      provider = $1
+      AND provideraccountid = $2;
+  `;
+  const result = await db.query(SQL, params);
+  return result.rows[0];
+}

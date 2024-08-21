@@ -4,7 +4,7 @@ import { updateAvatar } from "$lib/db/queries.js";
 
 /** @type {import('./$types').PageServerLoad} */
 export function load(event) {
-  console.log("/avatar");
+  console.log("/user/avatar");
 
   let avatar = event.cookies.get("avatar");
   if (!avatar) return redirect(302, "/auth/login");

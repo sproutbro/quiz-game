@@ -8,7 +8,9 @@
     <ul>
       <li><a href="/">처음</a></li>
       {#if data.isLogin}
-        <li><a href="/avatar">아바타</a></li>
+        <li><a href="/user/avatar">아바타</a></li>
+        <li><a href="/user/profile">내정보</a></li>
+        <li><a href="/auth/logout">로그아웃</a></li>
       {:else}
         <li><a href="/auth/login">로그인</a></li>
       {/if}
