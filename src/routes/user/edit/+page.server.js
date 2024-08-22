@@ -1,7 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { decrypt } from "$lib/util.js";
 import { selectProfile, updateProfile } from "$lib/db/queries.js";
-import { redirect } from "@sveltejs/kit";
 
 const current_path = "/user/edit";
 
