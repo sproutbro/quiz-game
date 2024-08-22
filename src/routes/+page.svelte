@@ -48,7 +48,7 @@
       quiz_question_element.innerHTML = data;
     });
 
-    socket.on("update player", (data) => {
+    socket.on("update score", (data) => {
       player.score = data.score;
       player.priofile = data.profile;
       const player_a_element = document.getElementById(socket.id);
@@ -126,6 +126,22 @@
   }
 
   #player {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
+  }
+
+  #chat {
+    height: 300px;
+    overflow-y: scroll;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
+  }
+
+  #input {
     width: 100%;
     padding: 10px;
     margin-top: 10px;

@@ -1,9 +1,9 @@
 import db from "./connection.js";
 
-let current_path = "$lib/db/queries";
+let file = "queries.js";
 
 export async function selectAccount(params) {
-  console.log({ current_path }, selectAccount);
+  console.log({ file }, selectAccount);
 
   const SQL = `
     SELECT
@@ -15,12 +15,12 @@ export async function selectAccount(params) {
         AND provideraccountid = $2;
     `;
   const result = await db.query(SQL, params);
-  console.log("result", { account: !!result.rows[0] });
+  console.log({ account: !!result.rows[0] });
   return result.rows[0];
 }
 
 export async function insertAccount(params) {
-  console.log({ current_path }, insertAccount);
+  console.log({ file }, insertAccount);
 
   const SQL = `
     INSERT INTO
@@ -34,7 +34,7 @@ export async function insertAccount(params) {
 }
 
 export async function selectAvatar(params) {
-  console.log({ current_path }, selectAvatar);
+  console.log({ file }, selectAvatar);
 
   const SQL = `
     SELECT
@@ -49,13 +49,12 @@ export async function selectAvatar(params) {
         AND provideraccountid = $2;
     `;
   const result = await db.query(SQL, params);
-
-  console.log("result", { avatar: !!result.rows[0] });
-  return result.rows[0];
+  const avatar = result.rows[0];
+  console.log({ avatar: !!avatar });
+  return avatar;
 }
-
 export async function insertAvatar(params) {
-  console.log({ current_path }, insertAvatar);
+  console.log({ file }, insertAvatar);
 
   const SQL = `
     INSERT INTO
@@ -68,7 +67,7 @@ export async function insertAvatar(params) {
 }
 
 export async function updateAvatar(params) {
-  console.log({ current_path }, updateAvatar);
+  console.log({ file }, updateAvatar);
   const SQL = `
     UPDATE
         avatar
@@ -76,20 +75,19 @@ export async function updateAvatar(params) {
         hair = $1,
         clothing = $2,
         accessories = $3,
-        skin = $4,
-        updated_at = CURRENT_TIMESTAMP
+        skin = $4
     WHERE
         provider = $5
         AND provideraccountid = $6;
     `;
 
   const result = await db.query(SQL, params);
-  console.log({ rowCount: result.rowCount });
+  console.log({ rowCount: !!result.rowCount });
   return result.rowCount;
 }
 
 export async function selectProfile(params) {
-  console.log({ current_path }, selectProfile);
+  console.log({ file }, selectProfile);
   const SQL = `
   SELECT
       *
@@ -106,7 +104,7 @@ export async function selectProfile(params) {
 }
 
 export async function insertProfile(params) {
-  console.log({ current_path }, insertProfile);
+  console.log({ file }, insertProfile);
 
   const SQL = `
   INSERT INTO
@@ -121,7 +119,7 @@ export async function insertProfile(params) {
 }
 
 export async function updateProfile(params) {
-  console.log({ current_path }, updateProfile);
+  console.log({ file }, updateProfile);
 
   const SQL = `
     UPDATE
@@ -139,7 +137,7 @@ export async function updateProfile(params) {
 }
 
 export async function selectScore(params) {
-  console.log({ current_path }, selectScore);
+  console.log({ file }, selectScore);
   const SQL = `
     SELECT
         math
@@ -156,7 +154,7 @@ export async function selectScore(params) {
 }
 
 export async function insertScore(params) {
-  console.log({ current_path }, insertScore);
+  console.log({ file }, insertScore);
   const SQL = `
     INSERT INTO
         score
@@ -170,7 +168,7 @@ export async function insertScore(params) {
 }
 
 export async function updateScore(params) {
-  console.log({ current_path }, updateScore);
+  console.log({ file }, updateScore);
   const SQL = `
     UPDATE
         score

@@ -9,8 +9,9 @@ export async function load(event) {
   let token = event.cookies.get("token");
   if (!token) return redirect(302, "/auth/login");
   token = JSON.parse(decrypt(token));
+  let access = [token.provider, token.providerId];
 
-  const avatar = await selectAvatar([token.provider, token.providerId]);
+  const avatar = await selectAvatar(access);
   return { avatar };
 }
 

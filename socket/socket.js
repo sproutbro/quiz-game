@@ -19,13 +19,16 @@ export default function socketIO(io) {
 
     io.emit("new question", quiz.question);
 
-    token = getToken(socket);
+    const token = getToken(socket);
     if (!token) return;
 
-    access = [token.provider, token.providerId];
+    const access = [token.provider, token.providerId];
 
-    if (!profile) profile = await executeTry("selectProfile", access);
-    if (!score) score = await executeTry("selectScore", access);
+    const profile = await executeTry("selectProfile", access);
+    if (!profile) return;
+
+    const score = await executeTry("selectScore", access);
+    if (!score) return;
 
     players[socket.id] = { profile, score };
     emit("set player", players);
@@ -39,18 +42,14 @@ export default function socketIO(io) {
       const user_answer = Number(data);
       const answer = quiz.answer;
       const correct = user_answer === answer;
-      console.log({ file }, "answer");
-      console.log({
-        user_answer,
-        answer,
-        correct,
-      });
+
+      // console.log({ file }, { socket: "answer" }, { correct });
 
       if (correct) {
         let score = players[socket.id].score.math;
         let params = [++score, ...access];
         players[socket.id].score = await executeTry("updateScore", params);
-        emit("update player", players[socket.id]);
+        emit("update score", players[socket.id]);
       }
 
       setQuiz();
@@ -100,6 +99,6 @@ export default function socketIO(io) {
 
   setInterval(() => {
     io.emit("time count", --timer);
-    if (!timer) timer = 20;
+    if (!timer) timer = 5;
   }, 1000);
 }

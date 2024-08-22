@@ -1,6 +1,7 @@
 import { redirect } from "@sveltejs/kit";
-import { decrypt, encrypt } from "$lib/util.js";
+import { decrypt } from "$lib/util.js";
 import { selectProfile, updateProfile } from "$lib/db/queries.js";
+import { redirect } from "@sveltejs/kit";
 
 const current_path = "/user/edit";
 
@@ -19,18 +20,18 @@ export async function load(event) {
 /** @type {import('./$types').Actions} */
 export const actions = {
   default: async (event) => {
-    console.log({ current_path }, "post");
+    console.log({ current_path, method: "post" });
 
     let token = event.cookies.get("token");
     if (!token) return redirect(302, "/auth/login");
     token = JSON.parse(decrypt(token));
 
     const formData = await event.request.formData();
-    const profile = Object.fromEntries(formData);
+    let profile = Object.fromEntries(formData);
 
     const params = [profile.nickname, token.provider, token.providerId];
-    const newProfile = await updateProfile(params);
-    console.log({ newProfile });
-    return { success: !!newProfile };
+    profile = await updateProfile(params);
+    console.log({ profile });
+    return redirect(302, "/auth/login");
   },
 };

@@ -11,8 +11,6 @@
     if (e.target.tagName === "IMG") {
       const urlObj = new URL(e.target.src);
       data.avatar[e.target.alt] = urlObj.pathname;
-
-      console.log(data.avatar);
     }
   }
 </script>
