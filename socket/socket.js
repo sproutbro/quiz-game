@@ -1,83 +1,105 @@
-import { parse, serialize } from "cookie";
-import { encrypt, decrypt } from "../src/lib/util.js";
+import { parse } from "cookie";
+import { decrypt } from "../src/lib/util.js";
+import queries from "../src/lib/db/queries.js";
 
-let players = {};
-const intervalTimer = 10000;
-
-//
-let question = newQuestion();
-setInterval(() => {
-  question = newQuestion();
-}, intervalTimer);
-
-function newQuestion() {
-  let randomNumber = Math.floor(Math.random() * 8) + 2;
-  let randomNumber2 = Math.floor(Math.random() * 8) + 2;
-
-  return {
-    question: `${randomNumber} * ${randomNumber2} =`,
-    answer: randomNumber * randomNumber2,
-  };
-}
+const file = "socket.js";
 
 export default function socketIO(io) {
-  // 소켓 연결 이벤트 처리
-  io.on("connection", (socket) => {
+  let players = {};
+  let quiz = { question: 0, answer: 0 };
+
+  let token;
+  let access;
+  let profile;
+  let score;
+  let timer = 5;
+
+  io.on("connection", async (socket) => {
     console.log(`a user connected`);
 
-    // 쿠키 가져오기
-    const cookies = getCookie(socket);
+    io.emit("new question", quiz.question);
 
-    // 플레이어 등록하기
-    if (cookies?.user_info && cookies?.avatar) {
-      registerPlayer(socket.id, cookies);
-      io.emit("setPlayer", players);
-    }
+    token = getToken(socket);
+    if (!token) return;
 
-    // 문제 보여주기
-    socket.emit("question", question.question);
-    showQuestion(socket);
+    access = [token.provider, token.providerId];
+
+    if (!profile) profile = await executeTry("selectProfile", access);
+    if (!score) score = await executeTry("selectScore", access);
+
+    players[socket.id] = { profile, score };
+    emit("set player", players);
 
     socket.on("chat message", (data) => {
-      if (data == question.answer) {
-        players[socket.id].score += 1;
-        io.emit("setPlayer", players);
+      const nickname = players[socket.id].profile.nickname;
+      emit("chat message", `${nickname}: ${data}`);
+    });
+
+    socket.on("answer", async (data) => {
+      const user_answer = Number(data);
+      const answer = quiz.answer;
+      const correct = user_answer === answer;
+      console.log({ file }, "answer");
+      console.log({
+        user_answer,
+        answer,
+        correct,
+      });
+
+      if (correct) {
+        let score = players[socket.id].score.math;
+        let params = [++score, ...access];
+        players[socket.id].score = await executeTry("updateScore", params);
+        emit("update player", players[socket.id]);
       }
 
-      io.emit("chat message", `${players[socket.id].nickname}: ${data}`);
+      setQuiz();
+      io.emit("new question", quiz.question);
     });
 
     socket.on("disconnect", () => {
+      emit("delete player", socket.id);
       delete players[socket.id];
-      io.emit("setPlayer", players);
       console.log("user disconnected");
     });
   });
-}
 
-// 쿠키 가져오기
-function getCookie(socket) {
-  let cookies = socket.handshake.headers.cookie;
-  if (cookies) cookies = parse(cookies);
+  function getToken(socket) {
+    console.log({ file }, getToken);
 
-  console.log("쿠키 가져오기 : ", cookies ? Object.keys(cookies) : null);
-  return cookies;
-}
+    let header_cookie = socket.handshake.headers.cookie;
+    let parse_cookies;
 
-// 플레이어 등록하기
-function registerPlayer(id, cookies) {
-  console.log("플레이어 등록하기");
-  const user_info = JSON.parse(decrypt(cookies.user_info));
-  const nickname = user_info.nickname;
-  const avatar = JSON.parse(decrypt(cookies.avatar));
+    if (!header_cookie) return;
+    parse_cookies = parse(header_cookie);
 
-  players[id] = { score: 0, nickname, avatar };
-}
+    if (!parse_cookies?.token) return;
+    return JSON.parse(decrypt(parse_cookies.token));
+  }
 
-// 문제 보여주기
-function showQuestion(socket) {
-  console.log("문제 보여주기");
+  function setQuiz() {
+    const num1 = Math.floor(Math.random() * 5) + 1;
+    const num2 = Math.floor(Math.random() * 5) + 1;
+    const question = `${num1} * ${num2} = `;
+    const answer = num1 * num2;
+    quiz = { question, answer };
+  }
+
+  async function executeTry(name, params) {
+    try {
+      return await queries[name](params);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function emit(emit, params) {
+    console.log({ file }, { emit }, { params: !!params });
+    io.emit(emit, params);
+  }
+
   setInterval(() => {
-    socket.emit("question", question.question);
-  }, intervalTimer);
+    io.emit("time count", --timer);
+    if (!timer) timer = 20;
+  }, 1000);
 }

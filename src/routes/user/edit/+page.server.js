@@ -1,40 +1,36 @@
 import { redirect } from "@sveltejs/kit";
 import { decrypt, encrypt } from "$lib/util.js";
-import { selectAvatar, updateAvatar } from "$lib/db/queries.js";
+import { selectProfile, updateProfile } from "$lib/db/queries.js";
+
+const current_path = "/user/edit";
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load(event) {
-  console.log("/user/avatar");
+  console.log({ current_path });
 
   let token = event.cookies.get("token");
   if (!token) return redirect(302, "/auth/login");
   token = JSON.parse(decrypt(token));
 
-  const avatar = await selectAvatar([token.provider, token.providerId]);
-  return { avatar };
+  const profile = await selectProfile([token.provider, token.providerId]);
+  return { profile };
 }
 
 /** @type {import('./$types').Actions} */
 export const actions = {
   default: async (event) => {
-    console.log("아바타 저장하기");
+    console.log({ current_path }, "post");
 
     let token = event.cookies.get("token");
     if (!token) return redirect(302, "/auth/login");
     token = JSON.parse(decrypt(token));
 
     const formData = await event.request.formData();
-    const avatar = Object.fromEntries(formData);
+    const profile = Object.fromEntries(formData);
 
-    const params = [
-      avatar.hair,
-      avatar.clothing,
-      avatar.accessories,
-      avatar.skin,
-      token.provider,
-      token.providerId,
-    ];
-
-    return { success: await updateAvatar(params) };
+    const params = [profile.nickname, token.provider, token.providerId];
+    const newProfile = await updateProfile(params);
+    console.log({ newProfile });
+    return { success: !!newProfile };
   },
 };

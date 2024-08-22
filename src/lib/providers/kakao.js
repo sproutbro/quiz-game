@@ -1,7 +1,11 @@
 import { AUTH_KAKAO_ID, AUTH_KAKAO_SECRET } from "$env/static/private";
 import { PUBLIC_ORIGIN } from "$env/static/public";
 
+const current_path = "$lib/providers/kakao";
+
 export function authorization() {
+  console.log({ current_path }, authorization);
+
   const url = new URL("https://kauth.kakao.com/oauth/authorize");
   const state = Math.random().toString();
   const params = new URLSearchParams({
@@ -16,6 +20,8 @@ export function authorization() {
 }
 
 export async function callback(code) {
+  console.log({ current_path }, callback);
+
   const url = "https://kauth.kakao.com/oauth/token";
   const option = {
     method: "POST",
@@ -33,13 +39,17 @@ export async function callback(code) {
 
   try {
     const response = await fetch(url, option);
-    return await response.json();
+    const token = await response.json();
+    console.log({ return: { token: !!token } });
+    return token;
   } catch (error) {
     console.error(error);
   }
 }
 
 export async function userInfo(access_token) {
+  console.log({ current_path }, userInfo);
+
   const url = "https://kapi.kakao.com/v2/user/me";
   const option = {
     headers: {
@@ -50,7 +60,9 @@ export async function userInfo(access_token) {
 
   try {
     const response = await fetch(url, option);
-    return await response.json();
+    const user_info = await response.json();
+    console.log({ return: { user_info: !!user_info } });
+    return user_info;
   } catch (error) {
     console.error(error);
   }

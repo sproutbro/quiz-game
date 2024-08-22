@@ -1,5 +1,6 @@
 <script>
   import { enhance } from "$app/forms";
+
   /** @type {import('./$types').PageData} */
   export let data;
 
@@ -10,6 +11,8 @@
     if (e.target.tagName === "IMG") {
       const urlObj = new URL(e.target.src);
       data.avatar[e.target.alt] = urlObj.pathname;
+
+      console.log(data.avatar);
     }
   }
 </script>
@@ -17,13 +20,10 @@
 <section id="avatar">
   <div class="avatar_container">
     <div class="avatar">
-      <img src={data.avatar.skin || `/img/skin01.png`} alt="skin" />
-      <img src={data.avatar.hair || `/img/hair01.png`} alt="hair" />
-      <img src={data.avatar.clothing || `/img/clothing01.png`} alt="clothing" />
-      <img
-        src={data.avatar.accessories || `/img/accessories01.png`}
-        alt="accessories"
-      />
+      <img src={data.avatar.skin} alt="skin" />
+      <img src={data.avatar.hair} alt="hair" />
+      <img src={data.avatar.clothing} alt="clothing" />
+      <img src={data.avatar.accessories} alt="accessories" />
     </div>
   </div>
 </section>

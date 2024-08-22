@@ -2,34 +2,62 @@
   import { onMount } from "svelte";
   import io from "socket.io-client";
 
+  /** @type {import('./$types').PageData} */
   export let data;
 
+  let players = {};
+  let player = {};
   let socket;
-  let player_section;
-  let chat_section;
-  let quiz_section;
+  let answer = null;
+
+  const path = "/";
 
   onMount(() => {
+    const player_section_element = document.getElementById("player");
+    const chat_section_element = document.getElementById("chat");
+    const quiz_question_element = document.querySelector(".quiz_question");
+    const timer_element = document.querySelector(".timer");
+
     socket = io(import.meta.env.VITE_SOCKET_URL, {
       withCredentials: true, // 쿠키를 함께 전송
     });
 
-    player_section = document.getElementById("player");
-    chat_section = document.getElementById("chat");
-    quiz_section = document.getElementById("quiz");
+    socket.on("set player", (data) => {
+      players = data;
+      player = players[socket.id];
 
-    socket.on("setPlayer", (data) => {
-      setPlayer(data);
+      player_section_element.innerHTML = "";
+      for (let key in players) {
+        const player = players[key];
+        const player_a_element = document.createElement("a");
+        player_a_element.id = key;
+        player_a_element.textContent = `${player.profile.nickname}: ${player.score.math}`;
+        player_a_element.href = `/user/profile/${player.profile.provider}_${player.profile.provideraccountid}`;
+
+        player_section_element.appendChild(player_a_element);
+      }
     });
 
     socket.on("chat message", (data) => {
       const newChatElement = document.createElement("div");
       newChatElement.textContent = data;
-      chat_section.appendChild(newChatElement);
+      chat_section_element.appendChild(newChatElement);
     });
 
-    socket.on("question", (data) => {
-      quiz_section.textContent = data;
+    socket.on("new question", (data) => {
+      quiz_question_element.innerHTML = data;
+    });
+
+    socket.on("update player", (data) => {
+      player.score = data.score;
+      player.priofile = data.profile;
+      const player_a_element = document.getElementById(socket.id);
+      player_a_element.textContent = `${player.profile.nickname}: ${player.score.math}`;
+    });
+
+    socket.on("time count", (timer) => {
+      timer_element.innerHTML = timer;
+      if (!timer) initAnswer();
     });
 
     return () => {
@@ -39,63 +67,48 @@
     };
   });
 
-  // 플레이어 등록
-  function setPlayer(players) {
-    console.log("플레이어 등록 : ", players);
-    player_section.innerHTML = "";
-    for (let key in players) {
-      const value = players[key];
-      const newScoreElement = document.createElement("div");
-      newScoreElement.id = key;
-      newScoreElement.textContent = `${value.nickname}: ${value.score}`;
-
-      // 아바타
-      const newAvatarElement = document.createElement("div");
-      newAvatarElement.classList.add("avatar");
-      newAvatarElement.style.display = "none";
-      const avatar = value.avatar;
-      for (let key in avatar) {
-        const value = avatar[key];
-        const newImgElement = document.createElement("img");
-        newImgElement.src = value;
-        newImgElement.alt = key;
-
-        newAvatarElement.appendChild(newImgElement);
-      }
-      newScoreElement.appendChild(newAvatarElement);
-
-      player_section.appendChild(newScoreElement);
-    }
+  function handleAnswerSubmit(e) {
+    const answer_input_element = e.currentTarget.answer;
+    answer = answer ? null : answer_input_element.value;
+    if (!answer) answer_input_element.value = null;
   }
 
-  // 채팅 메세지 전송
-  function handleChatSubmit(event) {
-    const chat_message = event.currentTarget.chat_message.value;
-    socket.emit("chat message", chat_message);
+  function handleChatSubmit(e) {
+    const chat_message = e.currentTarget.chat_message.value;
+    emit("chat message", chat_message);
   }
 
-  // 플레이어 정보창
-  function handlePlayerClick(e) {
-    let avatartElement;
+  function initAnswer() {
+    emit("answer", answer);
+    answer = null;
+  }
 
-    if (e.target.tagName === "DIV") {
-      avatartElement = e.target.querySelector(".avatar");
-    } else if (e.target.tagName === "IMG") {
-      avatartElement = e.target.parentNode;
-    } else {
-      return;
-    }
-
-    if (avatartElement.style.display === "block") {
-      avatartElement.style.display = "none";
-    } else {
-      avatartElement.style.display = "block";
-    }
+  function emit(emit, data) {
+    socket.emit(emit, data);
   }
 </script>
 
-<button id="player" on:click={handlePlayerClick}></button>
-<section id="quiz">quiz</section>
+<section id="player"></section>
+<section id="quiz">
+  <div class="quiz_question"></div>
+  <div class="quiz_answer">
+    <form on:submit|preventDefault={handleAnswerSubmit}>
+      <label for="">정답:</label>
+      <input
+        type="text"
+        name="answer"
+        value={answer}
+        disabled={answer || !data.isLogin}
+      />
+      <button disabled={!data.isLogin}
+        >{!answer ? "정답입력" : "정답수정"}</button
+      >
+    </form>
+  </div>
+  <div class="quiz_timer">
+    <p>남은시간: <span class="timer"></span></p>
+  </div>
+</section>
 <section id="chat"></section>
 <section id="input">
   <form on:submit|preventDefault={handleChatSubmit}>
@@ -105,9 +118,17 @@
 </section>
 
 <style>
+  #quiz {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
+  }
+
   #player {
-    border: none;
-    outline: none;
-    background-color: inherit;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
   }
 </style>
