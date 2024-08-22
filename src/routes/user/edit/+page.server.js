@@ -22,10 +22,7 @@ export const actions = {
   default: async (event) => {
     console.log({ current_path, method: "post" });
 
-    let token = event.cookies.get("token");
-    if (!token) return redirect(302, "/auth/login");
-    token = JSON.parse(decrypt(token));
-
+    const token = getToken(event);
     const formData = await event.request.formData();
     let profile = Object.fromEntries(formData);
 
@@ -35,3 +32,9 @@ export const actions = {
     return redirect(302, "/auth/login");
   },
 };
+
+function getToken(event) {
+  let token = event.cookies.get("token");
+  if (!token) return redirect(302, "/auth/login");
+  return JSON.parse(decrypt(token));
+}
