@@ -7,10 +7,8 @@
 
   let players = {};
   let player = {};
+  let answer = "";
   let socket;
-  let answer = null;
-
-  const path = "/";
 
   onMount(() => {
     const player_section_element = document.getElementById("player");

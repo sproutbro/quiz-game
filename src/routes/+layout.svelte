@@ -24,6 +24,7 @@
     <nav class="nav_main">
       <ul>
         <li><a href="/">처음</a></li>
+        <li><a href="/resume">이력서</a></li>
         {#if data.isLogin}
           <li>
             <HamburgerIcon />
